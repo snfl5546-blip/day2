@@ -1,0 +1,11 @@
+vjeju/
+.venv/
+.env
+.env.*
+*.env.txt
+__pycache__/
+*.pyc
+node_modules/
+.vercel/
+*.log
+my_api/

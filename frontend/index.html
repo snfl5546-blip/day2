@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제주마켓 · 장바구니</title>
+<style>
+  :root{
+    --bg:#f7f9fb;--card:#fff;--ink:#1c2a33;--mute:#6b7c88;--line:#e6edf2;
+    --brand:#0e7c9b;--brand2:#0a5f78;--accent:#f28c28;--ok:#2e9e5b;--danger:#d64545;
+    --shadow:0 4px 18px rgba(20,50,70,.08);--radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  button:disabled{opacity:.55;cursor:not-allowed}
+
+  /* 헤더 */
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar{max-width:1120px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px}
+  .logo{font-weight:800;font-size:1.3rem;color:var(--brand2);display:flex;gap:8px;align-items:center}
+  .logo small{font-weight:500;font-size:.78rem;color:var(--mute)}
+  .cartbtn{position:relative;display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;transition:.2s}
+  .cartbtn:hover{background:var(--brand2);transform:translateY(-1px)}
+  .badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--accent);color:#fff;font-size:.78rem;display:inline-flex;align-items:center;justify-content:center;transition:transform .25s}
+  .badge.pop{transform:scale(1.5)}
+
+  /* 히어로 */
+  .hero{max-width:1120px;margin:22px auto 0;padding:0 20px}
+  .hero .in{border-radius:26px;padding:34px 30px;color:#fff;overflow:hidden;position:relative;
+    background:linear-gradient(120deg,#0e7c9b 0%,#35b0c9 55%,#f6b56a 120%)}
+  .hero h1{font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.3}
+  .hero p{margin-top:8px;opacity:.95}
+  .hero .deco{position:absolute;right:22px;top:6px;font-size:6rem;opacity:.22;transform:rotate(12deg)}
+  .ship{display:inline-block;margin-top:14px;background:rgba(255,255,255,.22);padding:6px 14px;border-radius:999px;font-size:.88rem}
+
+  main{max-width:1120px;margin:auto;padding:22px 20px 80px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .chip{padding:8px 16px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:.92rem;transition:.2s}
+  .chip:hover{border-color:var(--brand)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+  .card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:.25s}
+  .card:hover{transform:translateY(-5px);box-shadow:0 14px 30px rgba(20,50,70,.14)}
+  .thumb{height:140px;display:flex;align-items:center;justify-content:center;font-size:4.2rem;transition:.3s}
+  .card:hover .thumb{transform:scale(1.06)}
+  .thumbwrap{overflow:hidden}
+  .body{padding:16px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .cat{font-size:.74rem;color:var(--brand);font-weight:700}
+  .name{font-weight:700;font-size:1.02rem}
+  .desc{font-size:.85rem;color:var(--mute);flex:1}
+  .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .price{font-weight:800;font-size:1.1rem}
+  .price small{font-weight:500;font-size:.8rem;color:var(--mute)}
+  .add{background:var(--brand);color:#fff;border-radius:12px;padding:8px 14px;font-weight:700;font-size:.9rem;transition:.2s}
+  .add:hover:not(:disabled){background:var(--brand2)}
+  .add.done{background:var(--ok)}
+
+  /* 스켈레톤 */
+  .sk{background:linear-gradient(90deg,#eef2f5 25%,#f7f9fb 50%,#eef2f5 75%);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:var(--radius);height:270px}
+  @keyframes sh{to{background-position:-200% 0}}
+
+  .err{background:#fdeaea;color:#8d2323;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .err button{background:#8d2323;color:#fff;border-radius:10px;padding:6px 14px}
+
+  /* 드로어 */
+  .overlay{position:fixed;inset:0;background:rgba(10,30,40,.45);opacity:0;pointer-events:none;transition:.3s;z-index:30}
+  .overlay.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:#fff;z-index:31;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);box-shadow:-10px 0 40px rgba(0,0,0,.18)}
+  .drawer.on{transform:none}
+  .dh{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .dh h2{font-size:1.15rem}
+  .x{font-size:1.4rem;width:36px;height:36px;border-radius:50%}
+  .x:hover{background:#eef2f5}
+  .items{flex:1;overflow:auto;padding:8px 20px}
+  .empty{text-align:center;color:var(--mute);padding:70px 10px}
+  .empty .big{font-size:3.4rem}
+  .it{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);animation:in .3s}
+  @keyframes in{from{opacity:0;transform:translateX(16px)}}
+  .it .em{width:54px;height:54px;border-radius:14px;background:#eef6f9;display:flex;align-items:center;justify-content:center;font-size:1.9rem;flex-shrink:0}
+  .it .info{flex:1;min-width:0}
+  .it .nm{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .it .pr{font-size:.85rem;color:var(--mute)}
+  .qty{display:inline-flex;align-items:center;gap:2px;margin-top:6px;background:#f1f5f8;border-radius:10px}
+  .qty button{width:30px;height:30px;font-size:1.1rem;border-radius:10px}
+  .qty button:hover:not(:disabled){background:#e0e9ef}
+  .qty span{min-width:26px;text-align:center;font-weight:700;font-size:.92rem}
+  .it .sub{font-weight:800;font-size:.95rem;text-align:right}
+  .it .rm{display:block;margin-top:6px;font-size:.78rem;color:var(--danger)}
+  .foot{border-top:1px solid var(--line);padding:16px 20px 20px;background:#fbfdfe}
+  .free{font-size:.84rem;color:var(--mute);margin-bottom:6px}
+  .free b{color:var(--brand2)}
+  .meter{height:8px;background:#e6edf2;border-radius:6px;overflow:hidden;margin-bottom:12px}
+  .meter div{height:100%;background:linear-gradient(90deg,var(--brand),#58c4d8);width:0;transition:width .45s}
+  .sum{display:flex;justify-content:space-between;font-size:.92rem;color:var(--mute);margin:3px 0}
+  .sum.t{color:var(--ink);font-weight:800;font-size:1.15rem;margin-top:8px}
+  .order{width:100%;margin-top:14px;background:var(--accent);color:#fff;border-radius:14px;padding:14px;font-weight:800;font-size:1rem;transition:.2s}
+  .order:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px)}
+  .clear{display:block;margin:10px auto 0;font-size:.82rem;color:var(--mute);text-decoration:underline}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);background:#1c2a33;color:#fff;padding:12px 22px;border-radius:999px;font-size:.92rem;opacity:0;transition:.3s;z-index:50;pointer-events:none;max-width:90%}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  footer{text-align:center;color:var(--mute);font-size:.82rem;padding:26px}
+  @media(max-width:520px){.hero .deco{display:none}.grid{grid-template-columns:repeat(2,1fr);gap:12px}.thumb{height:104px;font-size:3.2rem}.desc{display:none}.body{padding:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="logo">🌴 제주마켓 <small>Jeju Market</small></div>
+    <button class="cartbtn" id="openCart" aria-label="장바구니 열기">🛒 장바구니 <span class="badge" id="badge">0</span></button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="in">
+    <div class="deco">🍊</div>
+    <h1>제주의 맛을 집으로,<br>장바구니에 쏙 담아보세요</h1>
+    <p>산지 직송 감귤부터 흑돼지, 오메기떡까지</p>
+    <span class="ship">🚚 50,000원 이상 무료배송</span>
+  </div>
+</section>
+
+<main>
+  <div id="error"></div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>장바구니는 Railway(FastAPI) → Supabase 에 저장됩니다 · 데모 사이트</footer>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dh"><h2>🛒 내 장바구니</h2><button class="x" id="closeCart" aria-label="닫기">✕</button></div>
+  <div class="items" id="items"></div>
+  <div class="foot" id="foot"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+const FREE_SHIP = 50000, SHIP_FEE = 3000;
+const $ = id => document.getElementById(id);
+const won = n => n.toLocaleString("ko-KR") + "원";
+const GRAD = {과일:"linear-gradient(135deg,#ffe9c2,#ffc46b)",정육:"linear-gradient(135deg,#ffd9d9,#f79a9a)",수산:"linear-gradient(135deg,#cdeffa,#7bcde6)",
+  간식:"linear-gradient(135deg,#f3e3d3,#d9a877)",차:"linear-gradient(135deg,#d9f1d4,#8fcf8a)",기념품:"linear-gradient(135deg,#e5def7,#b2a2e6)"};
+
+/* 안전하게 요소 만들기 (상품명 등을 textContent 로 넣어 XSS 방지) */
+function h(tag, props={}, ...kids){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(props)){
+    if (k==="class") e.className=v; else if (k.startsWith("on")) e[k]=v; else e.setAttribute(k,v);
+  }
+  kids.flat().forEach(c => e.append(c instanceof Node ? c : document.createTextNode(c)));
+  return e;
+}
+
+/* 브라우저마다 고유한 장바구니 번호 */
+function getCartId(){
+  try{
+    let id = localStorage.getItem("cart_id");
+    if(!id){ id = (crypto.randomUUID ? crypto.randomUUID() : "c"+Date.now()+Math.random().toString(36).slice(2)); localStorage.setItem("cart_id", id); }
+    return id;
+  }catch{ return window.__cid || (window.__cid = "c"+Date.now()+Math.random().toString(36).slice(2)); }
+}
+const CART_ID = getCartId();
+
+/* API 호출 */
+async function api(path, opt={}){
+  const r = await fetch(API_URL + path, {headers:{"Content-Type":"application/json"}, ...opt});
+  if(!r.ok){ let m=""; try{ m=(await r.json()).detail }catch{} throw new Error(m || ("서버 오류 ("+r.status+")")); }
+  return r.json();
+}
+
+let products = [], cart = {items:[],count:0,total:0}, category = "전체", busy = false;
+
+/* ---------- 상품 ---------- */
+function renderChips(){
+  const cats = ["전체", ...new Set(products.map(p=>p.category))];
+  $("chips").replaceChildren(...cats.map(c => h("button",{class:"chip"+(c===category?" on":""),onclick:()=>{category=c;renderChips();renderProducts()}}, c)));
+}
+function renderProducts(){
+  const list = products.filter(p => category==="전체" || p.category===category);
+  $("grid").replaceChildren(...list.map(p => {
+    const btn = h("button",{class:"add"}, "담기");
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const ok = await mutate(() => api(`/cart/${CART_ID}/items`, {method:"POST", body:JSON.stringify({product_id:p.id, quantity:1})}));
+      btn.disabled = false;
+      if(ok){ btn.textContent="✓ 담김"; btn.classList.add("done"); toast(`${p.emoji} ${p.name} 을(를) 담았어요`); setTimeout(()=>{btn.textContent="담기";btn.classList.remove("done")},1100); }
+    };
+    return h("article",{class:"card"},
+      h("div",{class:"thumbwrap"}, h("div",{class:"thumb",style:"background:"+(GRAD[p.category]||GRAD.기념품)}, p.emoji)),
+      h("div",{class:"body"},
+        h("span",{class:"cat"}, p.category),
+        h("div",{class:"name"}, p.name),
+        h("div",{class:"desc"}, p.description),
+        h("div",{class:"row"}, h("div",{class:"price"}, p.price.toLocaleString("ko-KR"), h("small",{}, "원")), btn)));
+  }));
+}
+
+/* ---------- 장바구니 ---------- */
+function setCart(c){
+  cart = c;
+  const b = $("badge"); b.textContent = c.count; b.classList.add("pop"); setTimeout(()=>b.classList.remove("pop"),250);
+  renderCart();
+}
+async function mutate(fn){
+  if(busy) return false; busy = true;
+  try{ setCart(await fn()); $("error").replaceChildren(); return true; }
+  catch(e){ toast("⚠ "+e.message); return false; }
+  finally{ busy = false; }
+}
+function renderCart(){
+  const box = $("items"), foot = $("foot");
+  if(!cart.items.length){
+    box.replaceChildren(h("div",{class:"empty"}, h("div",{class:"big"},"🧺"), h("p",{},"장바구니가 비어 있어요"), h("p",{},"맛있는 제주 상품을 담아보세요!")));
+    foot.replaceChildren(); foot.style.display="none"; return;
+  }
+  foot.style.display="";
+  box.replaceChildren(...cart.items.map(it => {
+    const minus = h("button",{"aria-label":"하나 빼기", onclick:()=>mutate(()=>api(`/cart/${CART_ID}/items/${it.product_id}`,{method:"PATCH",body:JSON.stringify({quantity:it.quantity-1})}))}, "−");
+    const plus  = h("button",{"aria-label":"하나 더하기", onclick:()=>mutate(()=>api(`/cart/${CART_ID}/items/${it.product_id}`,{method:"PATCH",body:JSON.stringify({quantity:Math.min(99,it.quantity+1)})}))}, "+");
+    const rm = h("button",{class:"rm", onclick:()=>mutate(()=>api(`/cart/${CART_ID}/items/${it.product_id}`,{method:"DELETE"}))}, "삭제");
+    return h("div",{class:"it"},
+      h("div",{class:"em"}, it.emoji),
+      h("div",{class:"info"}, h("div",{class:"nm"}, it.name), h("div",{class:"pr"}, won(it.price)), h("div",{class:"qty"}, minus, h("span",{}, String(it.quantity)), plus)),
+      h("div",{}, h("div",{class:"sub"}, won(it.subtotal)), rm));
+  }));
+  const ship = cart.total >= FREE_SHIP ? 0 : SHIP_FEE;
+  const left = Math.max(0, FREE_SHIP - cart.total);
+  const meter = h("div",{class:"meter"}, h("div",{style:`width:${Math.min(100,cart.total/FREE_SHIP*100)}%`}));
+  const order = h("button",{class:"order", onclick:()=>toast("🎉 데모 사이트라 실제 결제는 되지 않아요")}, `${won(cart.total+ship)} 주문하기`);
+  const clear = h("button",{class:"clear", onclick:()=>{ if(confirm("장바구니를 모두 비울까요?")) mutate(()=>api(`/cart/${CART_ID}`,{method:"DELETE"})); }}, "장바구니 비우기");
+  foot.replaceChildren(
+    h("div",{class:"free"}, left>0 ? [h("b",{}, won(left)), " 더 담으면 무료배송!"] : "🎉 무료배송 혜택이 적용됐어요"),
+    meter,
+    h("div",{class:"sum"}, h("span",{},"상품금액"), h("span",{}, won(cart.total))),
+    h("div",{class:"sum"}, h("span",{},"배송비"), h("span",{}, ship? won(ship):"무료")),
+    h("div",{class:"sum t"}, h("span",{},"합계"), h("span",{}, won(cart.total+ship))),
+    order, clear);
+}
+
+/* ---------- 드로어 · 토스트 ---------- */
+function openCart(on){ $("drawer").classList.toggle("on",on); $("overlay").classList.toggle("on",on); $("drawer").setAttribute("aria-hidden",String(!on)); }
+$("openCart").onclick = ()=>openCart(true); $("closeCart").onclick = $("overlay").onclick = ()=>openCart(false);
+document.addEventListener("keydown", e => { if(e.key==="Escape") openCart(false); });
+let tt; function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),2200); }
+
+/* ---------- 시작 ---------- */
+function showError(msg){
+  $("error").replaceChildren(h("div",{class:"err"}, h("span",{}, "서버에 연결하지 못했어요: "+msg), h("button",{onclick:init},"다시 시도")));
+}
+async function init(){
+  $("grid").replaceChildren(...Array.from({length:8},()=>h("div",{class:"sk"})));
+  try{
+    [products, cart] = await Promise.all([api("/products"), api(`/cart/${CART_ID}`)]);
+    $("error").replaceChildren(); renderChips(); renderProducts(); setCart(cart);
+  }catch(e){ $("grid").replaceChildren(); showError(e.message); renderCart(); }
+}
+renderCart(); init();
+</script>
+</body>
+</html>
